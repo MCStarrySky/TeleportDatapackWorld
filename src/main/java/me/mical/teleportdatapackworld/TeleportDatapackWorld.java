@@ -32,6 +32,7 @@ public final class TeleportDatapackWorld extends JavaPlugin {
 
         new BukkitRunnable() {
             int time = 60;
+
             @Override
             public void run() {
                 if (getEnd() >= timestamp) {
@@ -85,25 +86,28 @@ public final class TeleportDatapackWorld extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("teleportdatapackworld")) {
-            if (args.length == 0) {
-                sender.sendMessage(prefix(ChatColor.GREEN) + "/teleportdatapackworld reload -- 重载插件");
-                sender.sendMessage(prefix(ChatColor.GREEN) + "/new -- 传送至洞穴与山崖世界");
-                sender.sendMessage(prefix(ChatColor.GREEN) + "/old -- 传送至普通世界 (与 + " + getEndText() + " 到期)");
-                return true;
-            }
-            if (args.length == 1) {
-                if (args[0].equalsIgnoreCase("reload")) {
-                    if (sender.hasPermission("TeleportDatapackWorld.reload")) {
-                        reloadConfig();
-                        sender.sendMessage(prefix(ChatColor.GREEN) + "重载配置文件成功.");
+            switch (args.length) {
+                case 0:
+                    sendHelp(sender);
+                    break;
+                case 1:
+                    if (args[0].equalsIgnoreCase("reload")) {
+                        if (sender.hasPermission("TeleportDatapackWorld.reload")) {
+                            reloadConfig();
+                            sender.sendMessage(prefix(ChatColor.GREEN) + "重载配置文件成功.");
+                        } else {
+                            sender.sendMessage(prefix(ChatColor.YELLOW) + "您没有权限.");
+                        }
                     } else {
-                        sender.sendMessage(prefix(ChatColor.YELLOW) + "您没有权限.");
+                        sender.sendMessage(prefix(ChatColor.YELLOW) + "未知命令, 请检查您的命令拼写是否正确.");
                     }
-                } else {
-                    sender.sendMessage(prefix(ChatColor.YELLOW) + "未知命令, 请检查您的命令拼写是否正确.");
-                }
-                return true;
+                    break;
+                default:
+                    sender.sendMessage(prefix(ChatColor.YELLOW) + "参数长度错误!");
+                    sendHelp(sender);
+                    break;
             }
+            return true;
         } else {
             Player p = null;
             if (sender instanceof Player) {
@@ -134,6 +138,12 @@ public final class TeleportDatapackWorld extends JavaPlugin {
             }
         }
         return super.onCommand(sender, command, label, args);
+    }
+
+    private static void sendHelp(CommandSender sender) {
+        sender.sendMessage(prefix(ChatColor.GREEN) + "/teleportdatapackworld reload -- 重载插件");
+        sender.sendMessage(prefix(ChatColor.GREEN) + "/new -- 传送至洞穴与山崖世界");
+        sender.sendMessage(prefix(ChatColor.GREEN) + "/old -- 传送至普通世界 (与 + " + getEndText() + " 到期)");
     }
 
     private static String prefix(ChatColor level) {
