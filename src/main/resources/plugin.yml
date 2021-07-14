@@ -1,0 +1,16 @@
+name: TeleportDatapackWorld
+version: ${project.version}
+main: me.mical.teleportdatapackworld.TeleportDatapackWorld
+api-version: 1.17
+authors: [ Mical ]
+commands:
+  old:
+    description: 传送到旧世界
+  new:
+    description: 传送到新世界
+  teleportdatapackworld:
+    description: 插件主命令
+permissions:
+  teleportdatapackworld.reload:
+    description: 重载插件
+    default: op

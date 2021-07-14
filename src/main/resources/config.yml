@@ -1,0 +1,5 @@
+AllowWorlds:
+  - world
+  - world_old
+PluginName: "地图迁移工具"
+Timestamp: -1
