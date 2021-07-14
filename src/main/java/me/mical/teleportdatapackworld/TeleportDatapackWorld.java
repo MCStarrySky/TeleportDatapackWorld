@@ -117,27 +117,34 @@ public final class TeleportDatapackWorld extends JavaPlugin {
                 sender.sendMessage(prefix(ChatColor.YELLOW) + "该命令仅玩家可执行.");
                 return true;
             }
-            final String world = p.getWorld().getName();
-            if (allowWorlds.contains(world)) {
-                if (command.getName().equalsIgnoreCase("new")) {
+            if (command.getName().equalsIgnoreCase("new")) {
+                if (checkWorld(p)) {
                     final World newWorld = Bukkit.getWorld("world");
                     assert newWorld != null;
                     p.teleport(newWorld.getSpawnLocation());
                     sender.sendMessage(prefix(ChatColor.GREEN) + "您已成功传送到新世界.");
                     return true;
-                } else if (command.getName().equalsIgnoreCase("old")) {
+                }
+            } else if (command.getName().equalsIgnoreCase("old")) {
+                if (checkWorld(p)) {
                     final World oldWorld = Bukkit.getWorld("world_old");
                     assert oldWorld != null;
                     p.teleport(oldWorld.getSpawnLocation());
                     sender.sendMessage(prefix(ChatColor.GREEN) + "您已成功传送到旧世界.");
                     return true;
                 }
-            } else {
-                sender.sendMessage(prefix(ChatColor.YELLOW) + "您不在许可的世界内, 无法随意传送, 您只能在旧主世界新主世界间随意传送.");
-                return true;
             }
         }
         return super.onCommand(sender, command, label, args);
+    }
+
+    private static boolean checkWorld(Player p) {
+        if (allowWorlds.contains(p.getWorld().getName())) {
+            return true;
+        } else {
+            p.sendMessage(prefix(ChatColor.YELLOW) + "您不在许可的世界内, 无法随意传送, 您只能在旧主世界新主世界间随意传送.");
+            return false;
+        }
     }
 
     private static void sendHelp(CommandSender sender) {
