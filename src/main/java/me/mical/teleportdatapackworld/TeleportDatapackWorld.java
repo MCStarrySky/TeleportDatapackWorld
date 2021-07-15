@@ -20,6 +20,7 @@ public final class TeleportDatapackWorld extends JavaPlugin {
     private static List<String> allowWorlds;
     private static String pn;
     private static long timestamp;
+    private static boolean uninstalled;
 
     @Override
     public void onEnable() {
@@ -27,40 +28,42 @@ public final class TeleportDatapackWorld extends JavaPlugin {
         saveDefaultConfig();
         reloadConfig();
 
-        new WorldCreator("world_old").environment(World.Environment.NORMAL).type(WorldType.NORMAL).createWorld();
-        Bukkit.getLogger().info(prefix(ChatColor.LIGHT_PURPLE) + "尝试加载老世界.");
+        if (!uninstalled) {
+            new WorldCreator("world_old").environment(World.Environment.NORMAL).type(WorldType.NORMAL).createWorld();
+            Bukkit.getLogger().info(prefix(ChatColor.LIGHT_PURPLE) + "尝试加载老世界.");
 
-        new BukkitRunnable() {
-            int time = 60;
+            new BukkitRunnable() {
+                int time = 60;
 
-            @Override
-            public void run() {
-                if (getEnd() >= timestamp) {
-                    Bukkit.getOnlinePlayers().forEach(player -> {
-                        final BaseComponent[] baseComponents = TextComponent.fromLegacyText(prefix(ChatColor.RED) + "旧主世界还有" + time + "秒就要从服务器中卸载了,请及时离开! (点击离开)");
-                        final TextComponent text = new TextComponent();
-                        Arrays.stream(baseComponents).forEach(text::addExtra);
-                        text.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "old"));
-                        player.spigot().sendMessage(text);
-                    });
-                    time--;
-                    if (time == 0) {
+                @Override
+                public void run() {
+                    if (getEnd() >= timestamp) {
                         Bukkit.getOnlinePlayers().forEach(player -> {
-                            if (player.getWorld().getName().equalsIgnoreCase("world_old")) {
-                                final World world = Bukkit.getWorld("world");
-                                assert world != null;
-                                player.teleport(world.getSpawnLocation());
-                                player.sendMessage(prefix(ChatColor.GREEN) + "已为您传送到主世界!");
-                            }
+                            final BaseComponent[] baseComponents = TextComponent.fromLegacyText(prefix(ChatColor.RED) + "旧主世界还有" + time + "秒就要从服务器中卸载了,请及时离开! (点击离开)");
+                            final TextComponent text = new TextComponent();
+                            Arrays.stream(baseComponents).forEach(text::addExtra);
+                            text.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "new"));
+                            player.spigot().sendMessage(text);
                         });
-                        Bukkit.unloadWorld("world_old", true);
-                        Bukkit.getLogger().info(prefix(ChatColor.GREEN) + "已卸载老世界.");
-                        Bukkit.broadcastMessage(prefix(ChatColor.GREEN) + "已卸载老世界.");
-                        cancel();
+                        time--;
+                        if (time == 0) {
+                            Bukkit.getOnlinePlayers().forEach(player -> {
+                                if (player.getWorld().getName().equalsIgnoreCase("world_old")) {
+                                    final World world = Bukkit.getWorld("world");
+                                    assert world != null;
+                                    player.teleport(world.getSpawnLocation());
+                                    player.sendMessage(prefix(ChatColor.GREEN) + "已为您传送到主世界!");
+                                }
+                            });
+                            Bukkit.unloadWorld("world_old", true);
+                            Bukkit.getLogger().info(prefix(ChatColor.LIGHT_PURPLE) + "已卸载老世界.");
+                            Bukkit.broadcastMessage(prefix(ChatColor.GREEN) + "已卸载老世界.");
+                            cancel();
+                        }
                     }
                 }
-            }
-        }.runTaskTimer(this, 0, 20L);
+            }.runTaskTimer(this, 0, 20L);
+        }
     }
 
     @Override
@@ -69,8 +72,13 @@ public final class TeleportDatapackWorld extends JavaPlugin {
         allowWorlds = getConfig().getStringList("AllowWorlds");
         pn = getConfig().getString("PluginName");
         timestamp = getConfig().getLong("Timestamp");
+        uninstalled = getConfig().getBoolean("Uninstalled");
         if (timestamp == -1) {
             timestamp = System.currentTimeMillis();
+            if (uninstalled) {
+                uninstalled = false;
+                getConfig().set("Uninstalled", uninstalled);
+            }
             getConfig().set("Timestamp", timestamp);
             saveConfig();
             Bukkit.getLogger().info(prefix(ChatColor.YELLOW) + "检测到未设定/已重置初始时间, 已设定为当前时间, 若想重置请设置 Timestamp 为 -1.");
