@@ -121,29 +121,40 @@ public final class TeleportDatapackWorld extends JavaPlugin {
             if (sender instanceof Player) {
                 p = (Player) sender;
             }
-            if (p == null) {
-                sender.sendMessage(prefix(ChatColor.YELLOW) + "该命令仅玩家可执行.");
-                return true;
-            }
             if (command.getName().equalsIgnoreCase("new")) {
-                if (checkWorld(p)) {
-                    final World newWorld = Bukkit.getWorld("world");
-                    assert newWorld != null;
-                    p.teleport(newWorld.getSpawnLocation());
-                    sender.sendMessage(prefix(ChatColor.GREEN) + "您已成功传送到新世界.");
-                    return true;
+                if (checkPlayer(p, sender)) {
+                    assert p != null;
+                    if (checkWorld(p)) {
+                        final World newWorld = Bukkit.getWorld("world");
+                        assert newWorld != null;
+                        p.teleport(newWorld.getSpawnLocation());
+                        p.sendMessage(prefix(ChatColor.GREEN) + "您已成功传送到新世界.");
+                        return true;
+                    }
                 }
             } else if (command.getName().equalsIgnoreCase("old")) {
-                if (checkWorld(p)) {
-                    final World oldWorld = Bukkit.getWorld("world_old");
-                    assert oldWorld != null;
-                    p.teleport(oldWorld.getSpawnLocation());
-                    sender.sendMessage(prefix(ChatColor.GREEN) + "您已成功传送到旧世界.");
-                    return true;
+                if (checkPlayer(p, sender)) {
+                    assert p != null;
+                    if (checkWorld(p)) {
+                        final World oldWorld = Bukkit.getWorld("world_old");
+                        assert oldWorld != null;
+                        p.teleport(oldWorld.getSpawnLocation());
+                        p.sendMessage(prefix(ChatColor.GREEN) + "您已成功传送到旧世界.");
+                        return true;
+                    }
                 }
             }
         }
         return super.onCommand(sender, command, label, args);
+    }
+
+    private static boolean checkPlayer(Player p, CommandSender cs) {
+        if (p != null) {
+            return true;
+        } else {
+            cs.sendMessage(prefix(ChatColor.YELLOW) + "该命令仅玩家可执行.");
+            return false;
+        }
     }
 
     private static boolean checkWorld(Player p) {
